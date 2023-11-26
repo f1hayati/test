@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<words>
-  <user>JKP800013</user>
-  <pass>DZ7Fa2828DZ7FT</pass>
-  <word1>falcon</word1>
-  <word2>sky</word2>
-  <word3>DF9L00013DF9L9136</word3>
-  <word4>cup</word4>
-  <word5>bottom2</word5>
-  <word6>rock</word6>
-  <word7>sand</word7>
-  <word8>river</word8>
-</words>
+<data>
+    <user>uss1</user>
+    <date>12.12.2022</date>
+    <message>falcon</message>
+    <errCode>err1</errCode>
+</data>
+<data>
+    <user>user2</user>
+    <date>01.01.2024</date>
+    <message>falcon</message>
+    <errCode>err0</errCode>
+</data>
