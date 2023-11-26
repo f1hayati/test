@@ -1,13 +1,16 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<data>
-    <user>uss1</user>
-    <date>12.12.2022</date>
-    <message>falcon</message>
-    <errCode>err1</errCode>
-</data>
-<data>
-    <user>user2</user>
-    <date>01.01.2024</date>
-    <message>falcon</message>
-    <errCode>err0</errCode>
-</data>
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <data>
+        <user>uss1</user>
+        <date>12.12.2022</date>
+        <message>falcon</message>
+        <errCode>err1</errCode>
+    </data>
+    <data>
+        <user>user2</user>
+        <date>01.01.2024</date>
+        <message>falcon</message>
+        <errCode>err0</errCode>
+    </data>
+</root>
+
