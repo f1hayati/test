@@ -1,0 +1,18 @@
+{
+  "root": {
+    "data": [
+      {
+        "user": "uss1",
+        "date": "12.12.2022",
+        "message": "falcon",
+        "errCode": "err1"
+      },
+      {
+        "user": "user2",
+        "date": "01.01.2024",
+        "message": "falcon",
+        "errCode": "err0"
+      }
+    ]
+  }
+}
