@@ -4,17 +4,20 @@
     {
       "username": "user1",
       "licenseStatus": "active",
-      "expiryDate": "2025-12-31"
+      "expiryDate": "2025-12-31",
+      "update": true
     },
     {
       "username": "user2",
       "licenseStatus": "expired",
-      "expiryDate": "2023-10-15"
+      "expiryDate": "2023-10-15",
+      "update": false
     },
     {
       "username": "user3",
       "licenseStatus": "active",
-      "expiryDate": "2026-05-20"
+      "expiryDate": "2026-05-20",
+      "update": true
     }
   ]
 }
