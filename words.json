@@ -1,18 +1,20 @@
 {
-  "root": {
-    "data": [
-      {
-        "user": "uss1",
-        "date": "12.12.2022",
-        "message": "falcon",
-        "errCode": "err1"
-      },
-      {
-        "user": "user2",
-        "date": "01.01.2024",
-        "message": "falcon",
-        "errCode": "err0"
-      }
-    ]
-  }
+  "version": "1.2.3",
+  "users": [
+    {
+      "username": "user1",
+      "licenseStatus": "active",
+      "expiryDate": "2025-12-31"
+    },
+    {
+      "username": "user2",
+      "licenseStatus": "expired",
+      "expiryDate": "2023-10-15"
+    },
+    {
+      "username": "user3",
+      "licenseStatus": "active",
+      "expiryDate": "2026-05-20"
+    }
+  ]
 }
