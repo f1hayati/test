@@ -7,8 +7,8 @@
       "expiryDate": "2025-12-31",
       "update": true,
       "capLog":true,
-      "capLog":false,
-      "capSave":false
+      "capHak":false,
+      "recSave":false
     },
     {
       "username": "user2",
@@ -16,8 +16,8 @@
       "expiryDate": "2025-10-15",
       "update": false,
       "capLog":true,
-      "capLog":true,
-      "capSave":false
+      "capHak":true,
+      "recSave":false
     },
     {
       "username": "user3",
@@ -25,8 +25,8 @@
       "expiryDate": "2024-05-20",
       "update": true,
       "capLog":true,
-      "capLog":true,
-      "capSave":true
+      "capHak":true,
+      "recSave":true
     }
   ]
 }
