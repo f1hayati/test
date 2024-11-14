@@ -1,11 +1,7 @@
 {
   "files": [
     "directory_structure.json",
-    "DownloadMnger.exe",
-    "DownloadMnger.exe.config",
-    "DownloadMnger.pdb",
-    "Newtonsoft.Json.dll",
-    "Newtonsoft.Json.xml"
+    "DownloadMnger.exe"    
   ],
   "folders": []
 }
