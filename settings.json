@@ -1,32 +1,95 @@
 {
-  "version": 20241201,
+  "version": 20241203,
   "users": [
     {
       "username": "13600013",
+      "hnt":"adm",
       "licenseStatus": "active",
       "expiryDate": "2025-12-31",
       "update": true,
       "capLog":true,
       "capHak":true,
-      "recSave":false
+      "recSave":true
     },
     {
-      "username": "user2",
-      "licenseStatus": "expired",
-      "expiryDate": "2025-10-15",
-      "update": false,
-      "capLog":true,
-      "capHak":true,
-      "recSave":false
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
+    },
+    {
+        "username": "13600xxx",
+        "hnt":"adm",
+        "licenseStatus": "active",
+        "expiryDate": "2025-12-31",
+        "update": false,
+        "capLog":false,
+        "capHak":false,
+        "recSave":false
     },
     {
       "username": "user3",
-      "licenseStatus": "active",
+      "hnt":"adm",
+      "licenseStatus": "expired",
       "expiryDate": "2025-05-20",
-      "update": true,
-      "capLog":true,
-      "capHak":true,
-      "recSave":true
+      "update": false,
+      "capLog":false,
+      "capHak":false,
+      "recSave":false
     }
   ]
 }
