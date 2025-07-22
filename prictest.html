@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Kamera Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        #qrInput {
+            padding: 12px;
+            width: 320px;
+            margin: 20px auto;
+            display: block;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+        #qrInput:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        .input-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-status {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .camera-controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .camera-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        .camera-btn.stop-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        #cameraContainer {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        #videoPreview {
+            max-width: 100%;
+            width: 400px;
+            height: 300px;
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        #canvas {
+            display: none;
+        }
+        .camera-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .camera-status.scanning {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .camera-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .qr-detected {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+            border: 2px solid #bee5eb !important;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .test-result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result.success {
+            border-left: 4px solid #4CAF50;
+            background: #f8fff8;
+        }
+        .test-result.error {
+            border-left: 4px solid #f44336;
+            background: #fff8f8;
+        }
+        .mock-data {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #ffeaa7;
+        }
+        .qr-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .qr-example {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .qr-example:hover {
+            transform: translateY(-2px);
+        }
+        .qr-example img {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Kamera Test Sayfası</h1>
+    
+    <div class="test-info">
+        <strong>🧪 Test Modu:</strong> Bu sayfa kamera fonksiyonunu test etmek için tasarlanmıştır. 
+        QR kod okuttuğunuzda veya manuel girdiğinizde sahte ürün verileri gösterilecek.
+    </div>
+
+    <div class="input-container">
+        <form id="qrForm">
+            <input type="text" id="qrInput" autocomplete="off" placeholder="QR Kodu test edin...">
+            <div class="input-status" id="inputStatus">Test için hazır...</div>
+        </form>
+    </div>
+
+    <div class="camera-controls">
+        <button type="button" id="startCameraBtn" class="camera-btn">📷 Kamera Test Et</button>
+        <button type="button" id="stopCameraBtn" class="camera-btn stop-btn" style="display: none;">⏹️ Kamera Kapat</button>
+    </div>
+
+    <div id="cameraContainer">
+        <video id="videoPreview" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+        <div id="cameraStatus" class="camera-status scanning">QR kod aranıyor...</div>
+    </div>
+
+    <div class="qr-examples">
+        <div class="qr-example" onclick="testWithCode('TEST001')">
+            <div style="width: 80px; height: 80px; background: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px;">TEST QR</div>
+            <div>TEST001</div>
+        </div>
+        <div class="qr-example" onclick="testWithCode('PRODUCT123')">
+            <div style="width: 80px; height: 80px; background: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px;">TEST QR</div>
+            <div>PRODUCT123</div>
+        </div>
+        <div class="qr-example" onclick="testWithCode('ITEM456')">
+            <div style="width: 80px; height: 80px; background: #f0f0f0; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px;">TEST QR</div>
+            <div>ITEM456</div>
+        </div>
+        <div class="qr-example" onclick="testWithCode('NOTFOUND')">
+            <div style="width: 80px; height: 80px; background: #fdd; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px;">HATA TEST</div>
+            <div>NOTFOUND</div>
+        </div>
+    </div>
+
+    <div id="testResult" class="test-result" style="display: none;">
+        <!-- Test sonuçları buraya gelecek -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrInput = document.getElementById('qrInput');
+            const inputStatus = document.getElementById('inputStatus');
+            const testResult = document.getElementById('testResult');
+            
+            // Kamera elementleri
+            const startCameraBtn = document.getElementById('startCameraBtn');
+            const stopCameraBtn = document.getElementById('stopCameraBtn');
+            const cameraContainer = document.getElementById('cameraContainer');
+            const videoPreview = document.getElementById('videoPreview');
+            const canvas = document.getElementById('canvas');
+            const cameraStatus = document.getElementById('cameraStatus');
+            const ctx = canvas.getContext('2d');
+            
+            let videoStream = null;
+            let scanningActive = false;
+            let lastScannedCode = '';
+            let lastScanTime = 0;
+
+            // Mock ürün verileri
+            const mockProducts = {
+                'TEST001': {
+                    uruntipi: 'Elektronik',
+                    marka: 'Samsung',
+                    urunadi: 'Galaxy S21 Test Telefon',
+                    alistarihi: '2024-01-15',
+                    alisfiyati: 8000,
+                    satisfiyati: 12000,
+                    iskontoorani: 10,
+                    kampanyaorani: 5,
+                    qrcode: 'TEST001'
+                },
+                'PRODUCT123': {
+                    uruntipi: 'Giyim',
+                    marka: 'Nike',
+                    urunadi: 'Air Max Test Ayakkabı',
+                    alistarihi: '2024-02-01',
+                    alisfiyati: 300,
+                    satisfiyati: 500,
+                    iskontoorani: 20,
+                    kampanyaorani: 10,
+                    qrcode: 'PRODUCT123'
+                },
+                'ITEM456': {
+                    uruntipi: 'Kitap',
+                    marka: 'Test Yayınevi',
+                    urunadi: 'JavaScript Test Kitabı',
+                    alistarihi: '2024-03-10',
+                    alisfiyati: 25,
+                    satisfiyati: 45,
+                    iskontoorani: 0,
+                    kampanyaorani: 15,
+                    qrcode: 'ITEM456'
+                }
+            };
+
+            // Input alanına focus ver
+            qrInput.focus();
+
+            // Kamera başlat butonu
+            startCameraBtn.addEventListener('click', startCamera);
+            
+            // Kamera durdur butonu
+            stopCameraBtn.addEventListener('click', stopCamera);
+
+            // Input değiştiğinde durum mesajını güncelle
+            qrInput.addEventListener('input', function() {
+                if (qrInput.value.trim() !== '') {
+                    inputStatus.textContent = 'Test verisi: ' + qrInput.value;
+                    inputStatus.style.color = '#2ecc71';
+                } else {
+                    inputStatus.textContent = 'Test için hazır...';
+                    inputStatus.style.color = '#7f8c8d';
+                }
+            });
+
+            // Form submit
+            document.getElementById('qrForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const qrValue = qrInput.value.trim();
+                if (qrValue) {
+                    processQRCode(qrValue);
+                }
+            });
+
+            // Test butonu fonksiyonu
+            window.testWithCode = function(code) {
+                qrInput.value = code;
+                processQRCode(code);
+            };
+
+            // QR kod işleme fonksiyonu
+            function processQRCode(qrValue) {
+                inputStatus.textContent = 'Test sorgusu: ' + qrValue;
+                inputStatus.style.color = '#e67e22';
+                
+                // Mock API çağrısı simülasyonu
+                setTimeout(() => {
+                    mockFetchProductInfo(qrValue);
+                }, 500);
+            }
+
+            // Mock ürün bilgisi getirme
+            function mockFetchProductInfo(qrcode) {
+                const product = mockProducts[qrcode];
+                
+                if (product) {
+                    // Başarılı sonuç
+                    testResult.className = 'test-result success';
+                    testResult.style.display = 'block';
+                    
+                    // İndirim hesaplamaları
+                    const originalPrice = parseFloat(product.satisfiyati);
+                    const discountRate = parseInt(product.iskontoorani) || 0;
+                    const campaignRate = parseInt(product.kampanyaorani) || 0;
+                    const totalDiscount = discountRate + campaignRate;
+                    const finalPrice = originalPrice * (1 - totalDiscount / 100);
+                    
+                    testResult.innerHTML = `
+                        <div class="mock-data"><strong>📱 TEST BAŞARILI!</strong> QR Kod okuma çalışıyor!</div>
+                        
+                        <div style="font-size: 18px; color: #2c3e50; margin-bottom: 10px;">
+                            <strong>${product.urunadi}</strong>
+                        </div>
+                        
+                        <div style="font-size: 32px; color: #e74c3c; font-weight: bold; text-align: center; margin: 15px 0;">
+                            ${finalPrice.toFixed(2)} TL
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0;">
+                            <div>
+                                <strong>Ürün Tipi:</strong> ${product.uruntipi}<br>
+                                <strong>Marka:</strong> ${product.marka}<br>
+                                <strong>QR Kod:</strong> ${product.qrcode}
+                            </div>
+                            <div>
+                                <strong>Liste Fiyatı:</strong> ${originalPrice.toFixed(2)} TL<br>
+                                <strong>İndirim:</strong> %${discountRate}<br>
+                                <strong>Kampanya:</strong> %${campaignRate}
+                            </div>
+                        </div>
+                        
+                        <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                            ✅ Kamera okuma başarılı! Gerçek sunucuda bu veriler SQLite'dan gelecek.
+                        </div>
+                    `;
+                } else {
+                    // Hata sonucu
+                    testResult.className = 'test-result error';
+                    testResult.style.display = 'block';
+                    testResult.innerHTML = `
+                        <div class="mock-data"><strong>❌ ÜRÜN BULUNAMADI!</strong></div>
+                        
+                        <div style="color: #721c24; margin: 15px 0;">
+                            QR Kod: <strong>${qrcode}</strong><br>
+                            Bu kod test verilerinde mevcut değil.
+                        </div>
+                        
+                        <div style="background: #f8d7da; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                            ⚠️ Kamera okuma çalışıyor, ancak ürün bulunamadı. Gerçek sunucuda bu durum SQLite'da olmayan ürünler için oluşacak.
+                        </div>
+                    `;
+                }
+                
+                // Input'u temizle
+                setTimeout(function() {
+                    qrInput.value = '';
+                    inputStatus.textContent = 'Test için hazır...';
+                    inputStatus.style.color = '#7f8c8d';
+                    if (!scanningActive) {
+                        qrInput.focus();
+                    }
+                }, 3000);
+            }
+
+            // Kamera başlatma fonksiyonu
+            async function startCamera() {
+                try {
+                    const constraints = {
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        }
+                    };
+
+                    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    videoPreview.srcObject = videoStream;
+                    
+                    cameraContainer.style.display = 'block';
+                    startCameraBtn.style.display = 'none';
+                    stopCameraBtn.style.display = 'inline-block';
+                    
+                    scanningActive = true;
+                    cameraStatus.textContent = 'QR kod aranıyor... (Test modu)';
+                    cameraStatus.className = 'camera-status scanning';
+
+                    videoPreview.addEventListener('loadedmetadata', () => {
+                        canvas.width = videoPreview.videoWidth;
+                        canvas.height = videoPreview.videoHeight;
+                        scanQRCode();
+                    });
+
+                } catch (error) {
+                    console.error('Kamera erişim hatası:', error);
+                    cameraStatus.textContent = 'Kamera erişim hatası: ' + error.message;
+                    cameraStatus.className = 'camera-status error';
+                }
+            }
+
+            // Kamera durdurma fonksiyonu
+            function stopCamera() {
+                scanningActive = false;
+                
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+                
+                videoPreview.srcObject = null;
+                cameraContainer.style.display = 'none';
+                startCameraBtn.style.display = 'inline-block';
+                stopCameraBtn.style.display = 'none';
+                
+                qrInput.focus();
+            }
+
+            // QR kod tarama fonksiyonu
+            function scanQRCode() {
+                if (!scanningActive || !videoPreview.videoWidth || !videoPreview.videoHeight) {
+                    if (scanningActive) {
+                        requestAnimationFrame(scanQRCode);
+                    }
+                    return;
+                }
+
+                ctx.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (qrCode && qrCode.data) {
+                    const currentTime = Date.now();
+                    
+                    if (qrCode.data !== lastScannedCode || (currentTime - lastScanTime) > 2000) {
+                        lastScannedCode = qrCode.data;
+                        lastScanTime = currentTime;
+                        
+                        cameraStatus.textContent = 'QR kod bulundu: ' + qrCode.data;
+                        cameraStatus.className = 'camera-status qr-detected';
+                        
+                        qrInput.value = qrCode.data;
+                        inputStatus.textContent = 'Kameradan okundu: ' + qrCode.data;
+                        inputStatus.style.color = '#2ecc71';
+                        
+                        setTimeout(() => {
+                            processQRCode(qrCode.data);
+                        }, 500);
+                        
+                        setTimeout(() => {
+                            if (scanningActive) {
+                                cameraStatus.textContent = 'QR kod aranıyor... (Test modu)';
+                                cameraStatus.className = 'camera-status scanning';
+                            }
+                        }, 3000);
+                    }
+                }
+
+                if (scanningActive) {
+                    requestAnimationFrame(scanQRCode);
+                }
+            }
+
+            window.addEventListener('beforeunload', function() {
+                stopCamera();
+            });
+        });
+    </script>
+</body>
+</html>
