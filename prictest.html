@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Kamera Test</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+    <script src="html5-qrcode.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -74,27 +74,26 @@
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
         }
-        #cameraContainer {
-            text-align: center;
-            margin: 20px 0;
+        .camera-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #qr-reader {
+            margin: 20px auto;
+            max-width: 500px;
             display: none;
         }
-        #videoPreview {
-            max-width: 100%;
-            width: 400px;
-            height: 300px;
-            border: 3px solid #3498db;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        #canvas {
-            display: none;
+        #qr-reader__dashboard_section_csr {
+            display: none !important;
         }
         .camera-status {
             margin-top: 10px;
             padding: 10px;
             border-radius: 5px;
             font-weight: bold;
+            text-align: center;
         }
         .camera-status.scanning {
             background-color: #d4edda;
@@ -106,10 +105,10 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        .qr-detected {
-            background-color: #d1ecf1 !important;
-            color: #0c5460 !important;
-            border: 2px solid #bee5eb !important;
+        .camera-status.success {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
             animation: pulse 1s infinite;
         }
         @keyframes pulse {
@@ -162,6 +161,17 @@
             height: 80px;
             border: 1px solid #ddd;
         }
+        
+        /* Html5-qrcode kütüphanesi stil düzenlemeleri */
+        #qr-reader video {
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        #qr-reader__scan_region {
+            border: 2px solid #3498db !important;
+        }
     </style>
 </head>
 <body>
@@ -184,11 +194,8 @@
         <button type="button" id="stopCameraBtn" class="camera-btn stop-btn" style="display: none;">⏹️ Kamera Kapat</button>
     </div>
 
-    <div id="cameraContainer">
-        <video id="videoPreview" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-        <div id="cameraStatus" class="camera-status scanning">QR kod aranıyor...</div>
-    </div>
+    <div id="qr-reader"></div>
+    <div id="cameraStatus" class="camera-status" style="display: none;"></div>
 
     <div class="qr-examples">
         <div class="qr-example" onclick="testWithCode('TEST001')">
@@ -222,14 +229,10 @@
             // Kamera elementleri
             const startCameraBtn = document.getElementById('startCameraBtn');
             const stopCameraBtn = document.getElementById('stopCameraBtn');
-            const cameraContainer = document.getElementById('cameraContainer');
-            const videoPreview = document.getElementById('videoPreview');
-            const canvas = document.getElementById('canvas');
             const cameraStatus = document.getElementById('cameraStatus');
-            const ctx = canvas.getContext('2d');
             
-            let videoStream = null;
-            let scanningActive = false;
+            let html5QrcodeScanner = null;
+            let isScanning = false;
             let lastScannedCode = '';
             let lastScanTime = 0;
 
@@ -383,111 +386,133 @@
                     qrInput.value = '';
                     inputStatus.textContent = 'Test için hazır...';
                     inputStatus.style.color = '#7f8c8d';
-                    if (!scanningActive) {
+                    if (!isScanning) {
                         qrInput.focus();
                     }
                 }, 3000);
             }
 
-            // Kamera başlatma fonksiyonu
-            async function startCamera() {
-                try {
-                    const constraints = {
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 640 },
-                            height: { ideal: 480 }
+            // QR kod başarıyla okunduğunda çalışacak fonksiyon
+            function onScanSuccess(decodedText, decodedResult) {
+                const currentTime = Date.now();
+                
+                // Aynı QR kodu 2 saniye içinde tekrar okumayı engelle
+                if (decodedText !== lastScannedCode || (currentTime - lastScanTime) > 2000) {
+                    lastScannedCode = decodedText;
+                    lastScanTime = currentTime;
+                    
+                    // Başarı mesajı göster
+                    cameraStatus.textContent = 'QR kod bulundu: ' + decodedText;
+                    cameraStatus.className = 'camera-status success';
+                    cameraStatus.style.display = 'block';
+                    
+                    // Input'a değeri yaz
+                    qrInput.value = decodedText;
+                    inputStatus.textContent = 'Kameradan okundu: ' + decodedText;
+                    inputStatus.style.color = '#2ecc71';
+                    
+                    // QR kodu işle
+                    setTimeout(() => {
+                        processQRCode(decodedText);
+                    }, 500);
+                    
+                    // 3 saniye sonra tarama mesajına geri dön
+                    setTimeout(() => {
+                        if (isScanning) {
+                            cameraStatus.textContent = 'QR kod aranıyor... (Test modu)';
+                            cameraStatus.className = 'camera-status scanning';
                         }
+                    }, 3000);
+                }
+            }
+
+            // QR kod okuma hatası (sessizce geç)
+            function onScanFailure(error) {
+                // Sürekli hata mesajları göstermemek için sessiz geç
+            }
+
+            // Kamera başlatma fonksiyonu
+            function startCamera() {
+                if (isScanning) return;
+                
+                try {
+                    // Html5QrcodeScanner yapılandırması
+                    const config = {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0,
+                        disableFlip: false,
+                        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
                     };
 
-                    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-                    videoPreview.srcObject = videoStream;
+                    html5QrcodeScanner = new Html5QrcodeScanner(
+                        "qr-reader", 
+                        config, 
+                        false // verbose - false yaparak console log'ları azalt
+                    );
+
+                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
                     
-                    cameraContainer.style.display = 'block';
+                    isScanning = true;
+                    
+                    // UI güncellemeleri
+                    document.getElementById('qr-reader').style.display = 'block';
                     startCameraBtn.style.display = 'none';
                     stopCameraBtn.style.display = 'inline-block';
+                    startCameraBtn.disabled = true;
                     
-                    scanningActive = true;
                     cameraStatus.textContent = 'QR kod aranıyor... (Test modu)';
                     cameraStatus.className = 'camera-status scanning';
-
-                    videoPreview.addEventListener('loadedmetadata', () => {
-                        canvas.width = videoPreview.videoWidth;
-                        canvas.height = videoPreview.videoHeight;
-                        scanQRCode();
-                    });
+                    cameraStatus.style.display = 'block';
 
                 } catch (error) {
-                    console.error('Kamera erişim hatası:', error);
-                    cameraStatus.textContent = 'Kamera erişim hatası: ' + error.message;
+                    console.error('Kamera başlatma hatası:', error);
+                    cameraStatus.textContent = 'Kamera başlatma hatası: ' + error.message;
                     cameraStatus.className = 'camera-status error';
+                    cameraStatus.style.display = 'block';
                 }
             }
 
             // Kamera durdurma fonksiyonu
             function stopCamera() {
-                scanningActive = false;
+                if (!isScanning) return;
                 
-                if (videoStream) {
-                    videoStream.getTracks().forEach(track => track.stop());
-                    videoStream = null;
-                }
-                
-                videoPreview.srcObject = null;
-                cameraContainer.style.display = 'none';
-                startCameraBtn.style.display = 'inline-block';
-                stopCameraBtn.style.display = 'none';
-                
-                qrInput.focus();
-            }
-
-            // QR kod tarama fonksiyonu
-            function scanQRCode() {
-                if (!scanningActive || !videoPreview.videoWidth || !videoPreview.videoHeight) {
-                    if (scanningActive) {
-                        requestAnimationFrame(scanQRCode);
+                try {
+                    if (html5QrcodeScanner) {
+                        html5QrcodeScanner.clear().then(() => {
+                            console.log('QR Scanner temizlendi');
+                        }).catch(error => {
+                            console.error('QR Scanner temizleme hatası:', error);
+                        });
+                        html5QrcodeScanner = null;
                     }
-                    return;
-                }
-
-                ctx.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-                
-                if (qrCode && qrCode.data) {
-                    const currentTime = Date.now();
                     
-                    if (qrCode.data !== lastScannedCode || (currentTime - lastScanTime) > 2000) {
-                        lastScannedCode = qrCode.data;
-                        lastScanTime = currentTime;
-                        
-                        cameraStatus.textContent = 'QR kod bulundu: ' + qrCode.data;
-                        cameraStatus.className = 'camera-status qr-detected';
-                        
-                        qrInput.value = qrCode.data;
-                        inputStatus.textContent = 'Kameradan okundu: ' + qrCode.data;
-                        inputStatus.style.color = '#2ecc71';
-                        
-                        setTimeout(() => {
-                            processQRCode(qrCode.data);
-                        }, 500);
-                        
-                        setTimeout(() => {
-                            if (scanningActive) {
-                                cameraStatus.textContent = 'QR kod aranıyor... (Test modu)';
-                                cameraStatus.className = 'camera-status scanning';
-                            }
-                        }, 3000);
-                    }
-                }
-
-                if (scanningActive) {
-                    requestAnimationFrame(scanQRCode);
+                    isScanning = false;
+                    
+                    // UI güncellemeleri
+                    document.getElementById('qr-reader').style.display = 'none';
+                    startCameraBtn.style.display = 'inline-block';
+                    stopCameraBtn.style.display = 'none';
+                    startCameraBtn.disabled = false;
+                    cameraStatus.style.display = 'none';
+                    
+                    qrInput.focus();
+                    
+                } catch (error) {
+                    console.error('Kamera durdurma hatası:', error);
                 }
             }
 
+            // Sayfa kapatılırken kamerayı durdur
             window.addEventListener('beforeunload', function() {
                 stopCamera();
+            });
+
+            // Sayfa gizlendiğinde kamerayı durdur
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && isScanning) {
+                    stopCamera();
+                }
             });
         });
     </script>
