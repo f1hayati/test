@@ -8,8 +8,8 @@
       "expiryDate": "2025-12-31",
       "update": true,
       "capLog":true,
-      "capHak":true,
-      "recSave":true
+      "capHak":false,
+      "recSave":false
     },
     {
         "username": "13600xxx",
