@@ -8,7 +8,7 @@
       "expiryDate": "2025-12-31",
       "update": true,
       "capLog":false,
-      "capHak":false,
+      "capHak":true,
       "recSave":true
     },
     {
