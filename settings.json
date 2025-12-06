@@ -33,12 +33,12 @@
     },
     {
         "username": "13600047",
-        "hnt":"adm",
+        "hnt":"yprk",
         "licenseStatus": "active",
-        "expiryDate": "2025-12-31",
+        "expiryDate": "2026-12-31",
         "update": false,
-        "capLog":false,
-        "capHak":false,
+        "capLog":true,
+        "capHak":true,
         "recSave":false
     },
     {
