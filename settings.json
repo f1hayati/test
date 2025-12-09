@@ -62,12 +62,12 @@
         "recSave":false
     },
     {
-        "username": "13600xxx",
-        "hnt":"adm",
+        "username": "13600134",
+        "hnt":"hkn",
         "licenseStatus": "active",
         "expiryDate": "2025-12-31",
         "update": false,
-        "capLog":false,
+        "capLog":true,
         "capHak":false,
         "recSave":false
     },
