@@ -59,7 +59,7 @@
         "update": false,
         "capLog":true,
         "capHak":false,
-        "recSave":false
+        "recSave":true
     },
     {
         "username": "13600134",
